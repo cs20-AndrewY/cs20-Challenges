@@ -75,12 +75,12 @@ class Player{
 for(let i = 0; i <= obstaclerows; i++){
     if(i % 2 == 0){
         for(let j = 160; j <= 1280; j += 160){
-            let obj = new Obstacle(j, fullheight / obstaclerows * (i + 1));
+            let obj = new Obstacle(j, fullheight - fullheight / obstaclerows * (i + 1));
             obstacles.push(obj);
         }
     } else{
         for(let j = 240; j < 1280; j += 160){
-            let obj = new Obstacle(j, fullheight / obstaclerows * (i + 1));
+            let obj = new Obstacle(j, fullheight - fullheight / obstaclerows * (i + 1));
             obstacles.push(obj);
         }
     }
@@ -128,16 +128,21 @@ function frameMove(){
     }
     
 }
-//fix
-function detectCollisions(){
-    for(let i = 0; i < obstacles.length; i++){
-        if (player.x + player.w > obstacles[i].x && player.x < obstacles[i].x + obstacles[i].width
-            && player.y + player.w > obstacles[i].y && player.y < obstacles[i].y + obstacles[i].height){
-                player.y = obstacles[i].y + player.h;
-                player.x = obstacles[i].x + obstacles[i].width / 2;
-            }
+
+function detectCollisions() {
+    for (let i = 0; i < obstacles.length; i++) {
+        if (
+            player.x + player.w > obstacles[i].x &&
+            player.x < obstacles[i].x + obstacles[i].width &&
+            player.y + player.w > obstacles[i].y &&
+            player.y < obstacles[i].y + obstacles[i].height
+        ) {
+            player.y = obstacles[i].y - player.h;
+            player.dy = 0;
+        }
     }
 }
+
 function draw(){
     ctx.clearRect(0, 0, width, height);
     drawObjects();
