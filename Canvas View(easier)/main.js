@@ -5,7 +5,7 @@ const height = canvas.height;
 const fullwidth = 1280;
 const fullheight = 1280;
 let obstacles = [];
-let obstaclerows = 10;
+let obstaclerows = 9;
 let currentframe = {xstart: 320, xend: 960, ystart: fullheight, yend: 640};
 let rightPressed = false;
 let leftPressed = false;
@@ -48,7 +48,7 @@ class Player{
     move(){
         frameMove();
         this.dx = 0;
-        if(this.dy != 0) this.dy += gravity;
+        if(this.dy != 0 || this.y != currentframe.ystart) player.dy += gravity;
         if (rightPressed == true) {
             if (this.x + this.w > canvas.width) {
               this.dx = 0;
@@ -64,7 +64,7 @@ class Player{
             }
           }
         if (this.y - this.h < 0) {
-            this.dy = 0;
+            this.dy += gravity;
         }
         if (this.y + this.h > canvas.height) {
             this.dy = 0;
@@ -74,12 +74,12 @@ class Player{
 
 for(let i = 0; i <= obstaclerows; i++){
     if(i % 2 == 0){
-        for(let j = 160; j <= 1280; j += 160){
+        for(let j = 160; j <= 1200; j += 160){
             let obj = new Obstacle(j, fullheight - fullheight / obstaclerows * (i + 1));
             obstacles.push(obj);
         }
     } else{
-        for(let j = 240; j < 1280; j += 160){
+        for(let j = 240; j < 1200; j += 160){
             let obj = new Obstacle(j, fullheight - fullheight / obstaclerows * (i + 1));
             obstacles.push(obj);
         }
@@ -118,11 +118,8 @@ function frameMove(){
         }
     }
     //FOR Y, only raise canvas view if player is above middle
-    if((player.y > 320 && currentframe.ystart == fullheight) || (currentframe.yend <= 0 && player.y <= 321)) player.y += player.dy;
+    if((currentframe.ystart >= fullheight && player.y >= 321) || (currentframe.yend <= 0 && player.y < 320)) player.y += player.dy;
     else {
-        if((currentframe.ystart == fullheight)){
-            player.y = 321;
-        }
             currentframe.ystart += player.dy;
             currentframe.yend += player.dy;
     }
@@ -132,13 +129,17 @@ function frameMove(){
 function detectCollisions() {
     for (let i = 0; i < obstacles.length; i++) {
         if (
-            player.x + player.w > obstacles[i].x &&
-            player.x < obstacles[i].x + obstacles[i].width &&
-            player.y + player.w > obstacles[i].y &&
-            player.y < obstacles[i].y + obstacles[i].height
+            player.x + player.w > obstacles[i].x - currentframe.xstart &&
+            player.x < obstacles[i].x - currentframe.xstart + obstacles[i].width &&
+            player.y + player.h > obstacles[i].y - currentframe.yend &&
+            player.y < obstacles[i].y - currentframe.yend + obstacles[i].height
         ) {
-            player.y = obstacles[i].y - player.h;
+            let inity = player.y;
+            player.y = obstacles[i].y - currentframe.yend - player.h;
             player.dy = 0;
+            currentframe.ystart += player.y - inity;
+            currentframe.yend += player.y - inity;
+            break;
         }
     }
 }
